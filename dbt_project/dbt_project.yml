@@ -1,0 +1,36 @@
+name: dw_contratos
+version: "1.0.0"
+profile: dw_contratos
+
+model-paths: ["models"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+clean-targets: ["target", "dbt_packages"]
+
+# log de execução de cada modelo/teste em audit.dbt_results (ver macros/audit_dbt_results.sql)
+on-run-start:
+  - "{{ create_dbt_results_table() }}"
+on-run-end:
+  - "{{ log_dbt_results(results) }}"
+
+models:
+  dw_contratos:
+    staging:
+      +schema: staging
+      +materialized: view      # staging é leve: sempre reflete o raw atual
+    intermediate:
+      +schema: intermediate
+      +materialized: view
+    marts:
+      +schema: marts
+      +materialized: table     # consultado pelo Metabase: precisa ser rápido
+      # reaplicado a cada execução (o dbt recria as tabelas, um GRANT manual se perderia)
+      +grants:
+        select: ["metabase_reader"]
+    monitoring:
+      +schema: monitoring
+      +materialized: view      # sempre reflete o audit atual
+      +grants:
+        select: ["metabase_reader"]

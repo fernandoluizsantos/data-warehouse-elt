@@ -1,0 +1,10 @@
+[project]
+name = "data-warehouse-elt"
+version = "0.1.0"
+description = "ELT de contratos e pagamentos: API -> lake (S3) -> Postgres -> dbt -> Metabase, orquestrado com Dagster"
+requires-python = ">=3.12,<3.13"
+
+# `dagster dev` na raiz encontra as definições por aqui
+[tool.dagster]
+module_name = "orchestration.definitions"
+code_location_name = "dw_contratos"

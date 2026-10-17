@@ -1,0 +1,115 @@
+version: 2
+
+models:
+  - name: fct_pagamentos
+    description: >
+      Fato de pagamentos. Granularidade: 1 linha por pagamento.
+      Exclui pagamentos com amount_paid incoerente (ver stg_payments.has_amount_inconsistency).
+      Incremental por _extracted_at.
+    columns:
+      - name: pagamento_id
+        data_tests: [unique, not_null]
+      - name: estado_pagamento
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Pago", "Pendente Pagamento", "Cancelado"]
+      - name: contrato_sk
+        description: Versão do contrato vigente na criação do pagamento (SCD2). '-1' = sem contrato.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_contrato')
+                field: contrato_sk
+      - name: fornecedor_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_fornecedor'), field: fornecedor_id}
+      - name: campus_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_campus'), field: campus_id}
+      - name: marca_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_marca'), field: marca_id}
+      - name: verba_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_verba'), field: verba_id}
+      - name: data_criacao_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_data'), field: date_key}
+      - name: data_pagamento_key
+        description: -1 quando ainda não foi pago.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_data'), field: date_key}
+      - name: data_vencimento_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_data'), field: date_key}
+      - name: valor_pagamento
+        data_tests: [not_null]
+      - name: possui_inconsistencia_valor
+        description: Sempre false na tabela final (linhas true são apagadas pelo post_hook).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [false]
+                quote: false
+
+  - name: fct_contratos
+    description: >
+      Fato de contratos (accumulating snapshot). Granularidade: 1 linha por contrato, estado atual.
+      saldo = valor_contratado - valor_pago, apenas para contratos Aprovados.
+    columns:
+      - name: contrato_id
+        data_tests: [unique, not_null]
+      - name: contrato_sk
+        description: Versão atual do contrato.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_contrato'), field: contrato_sk}
+      - name: fornecedor_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_fornecedor'), field: fornecedor_id}
+      - name: campus_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_campus'), field: campus_id}
+      - name: marca_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_marca'), field: marca_id}
+      - name: verba_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_verba'), field: verba_id}
+      - name: data_criacao_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_data'), field: date_key}
+      - name: data_aprovacao_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_data'), field: date_key}
+      - name: valor_contratado
+        data_tests: [not_null]

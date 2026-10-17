@@ -1,0 +1,49 @@
+version: 2
+
+models:
+  - name: dim_data
+    description: Calendário (2020–2030), uma linha por dia; -1 = "Sem data". Usada com vários papéis.
+    columns:
+      - name: date_key
+        description: Data no formato AAAAMMDD (inteiro).
+        data_tests: [unique, not_null]
+
+  - name: dim_contrato
+    description: >
+      Contrato com histórico (SCD2). Uma linha por versão; contrato_sk identifica a versão.
+      A 1ª versão vale desde 1900-01-01 (o histórico real começa no 1º snapshot). -1 = "Sem contrato".
+    columns:
+      - name: contrato_sk
+        data_tests: [unique, not_null]
+      - name: contrato_id
+        data_tests: [not_null]
+      - name: valido_de
+        data_tests: [not_null]
+      - name: valido_ate
+        data_tests: [not_null]
+
+  - name: dim_fornecedor
+    description: Fornecedor (cadastro mais recente). -1 = "Não informado".
+    columns:
+      - name: fornecedor_id
+        data_tests: [unique, not_null]
+      - name: razao_social
+        data_tests: [not_null]
+
+  - name: dim_campus
+    description: Campus (nome mais recente). -1 = "Não informado".
+    columns:
+      - name: campus_id
+        data_tests: [unique, not_null]
+
+  - name: dim_marca
+    description: Marca (nome mais recente). -1 = "Não informado".
+    columns:
+      - name: marca_id
+        data_tests: [unique, not_null]
+
+  - name: dim_verba
+    description: Verba / budget allocation (nome mais recente). -1 = "Não informado".
+    columns:
+      - name: verba_id
+        data_tests: [unique, not_null]

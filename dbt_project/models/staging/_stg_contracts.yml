@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: stg_contracts
+    description: >
+      Um registro por contrato, com tipos corretos e nomes padronizados.
+      Dados pessoais e bancários ficam de fora; a lista aninhada de pagamentos fica só no raw.
+    columns:
+      - name: contract_id
+        data_tests: [unique, not_null]
+      - name: contract_code
+        data_tests: [unique, not_null]
+      - name: contract_type
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Spot", "Obra", "Mensal", "Guarda-chuva"]
+      - name: contract_state
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Aprovado", "Pendente Aprovação", "Finalizado", "Encerrado", "Reprovado", "Cancelado"]
+      - name: validity_year
+        description: Ano de vigência extraído de contract_validity ("2026" ou "30/12/2025").
+        data_tests: [not_null]
+      - name: supplier_id
+        data_tests: [not_null]
+      - name: campus_id
+        data_tests: [not_null]
+      - name: brand_id
+        data_tests: [not_null]
+      - name: contract_value
+        data_tests: [not_null]
+      - name: amount_committed
+        description: >
+          Campo "amount_paid" da API. Apesar do nome, é a soma do payment_value dos pagamentos
+          não cancelados (inclui pendentes): valor já lançado em pagamentos, não dinheiro pago.
+      - name: amount_remaining
+        description: >
+          Campo "amount_to_pay" da API: contract_value - amount_committed.
+          Zerado pela origem quando o contrato é Encerrado ou Cancelado.
+      - name: created_at
+        data_tests: [not_null]
+      - name: approved_at
+        description: NULL quando a API manda a data sentinela 2000-01-01 (ainda não aprovado).

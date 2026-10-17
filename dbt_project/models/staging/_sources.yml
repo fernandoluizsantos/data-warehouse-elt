@@ -1,0 +1,26 @@
+version: 2
+
+sources:
+  - name: seed_api
+    description: Dados brutos da API SEED, carregados pelo extract/ (um registro JSON por linha).
+    schema: raw
+    loaded_at_field: _extracted_at
+    config:
+      freshness:
+        warn_after: {count: 26, period: hour}    # extração é diária
+        error_after: {count: 50, period: hour}
+    tables:
+      - name: payments
+        description: Pagamentos. Estado atual de cada pagamento (upsert por id).
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+          - name: payload
+            description: Registro exatamente como veio da API.
+      - name: contracts
+        description: Contratos. Estado atual de cada contrato (upsert por id).
+        columns:
+          - name: id
+            data_tests: [unique, not_null]
+          - name: payload
+            description: Registro exatamente como veio da API (inclui lista aninhada de pagamentos).

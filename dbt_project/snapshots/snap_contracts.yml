@@ -1,0 +1,28 @@
+snapshots:
+  - name: snap_contracts
+    description: >
+      Histórico (SCD tipo 2) dos atributos de contrato. A cada `dbt snapshot`, se alguma
+      coluna de check_cols mudou, a versão atual é fechada (dbt_valid_to) e uma nova é aberta.
+    relation: ref('stg_contracts')
+    config:
+      schema: snapshots
+      unique_key: contract_id
+      # contratos não têm campo de "última atualização" -> compara colunas
+      strategy: check
+      # só atributos descritivos. Valores lançados/saldo mudam a cada pagamento e são
+      # medidas (vão para a fato), não motivo para versionar o contrato.
+      check_cols:
+        - contract_state
+        - contract_type
+        - contract_value
+        - validity_year
+        - project_code
+        - supplier_id
+        - campus_id
+        - brand_id
+        - budget_allocation_id
+        - obra_type_id
+        - strategic_directorate_id
+        - amplification_type_id
+      # versão atual com fim "infinito" em vez de NULL: facilita o BETWEEN nos joins
+      dbt_valid_to_current: "'9999-12-31'::timestamp"

@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: mon_extracoes
+    description: Uma linha por extração, com variação de volume em relação à anterior bem-sucedida.
+    columns:
+      - name: run_id
+        data_tests: [unique, not_null]
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["running", "success", "failed"]
+
+  - name: mon_execucoes_dbt
+    description: Uma linha por execução do dbt, com contagem de modelos e testes por status.
+    columns:
+      - name: invocation_id
+        data_tests: [unique, not_null]
+
+  - name: mon_qualidade_dados
+    description: Histórico de cada teste do dbt (status e registros com problema) por execução.

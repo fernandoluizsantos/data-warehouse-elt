@@ -1,0 +1,50 @@
+version: 2
+
+# Contrato do stg_payments: o modelo que você vai escrever precisa passar nestes testes.
+models:
+  - name: stg_payments
+    description: >
+      Um registro por pagamento, com tipos corretos e nomes padronizados.
+      Dados pessoais e bancários ficam de fora.
+    columns:
+      - name: payment_id
+        data_tests: [unique, not_null]
+      - name: payment_code
+        data_tests: [not_null]
+      - name: payment_state
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Pago", "Pendente Pagamento", "Cancelado"]
+      - name: contract_id
+        description: >
+          NULL em ~80 pagamentos que a API devolve sem nenhum dado de contrato.
+          Mantidos; nos marts usam o membro desconhecido (-1 "Sem contrato").
+        data_tests:
+          - not_null:
+              config:
+                severity: warn
+          # todo pagamento com contrato aponta para um contrato existente
+          - relationships:
+              arguments:
+                to: ref('stg_contracts')
+                field: contract_id
+      - name: supplier_id
+        data_tests:
+          - not_null:
+              config:
+                severity: warn
+      - name: payment_value
+        data_tests: [not_null]
+      - name: amount_paid
+        data_tests: [not_null]
+      - name: created_at
+        data_tests: [not_null]
+      - name: paid_at
+        description: NULL quando a API manda a data sentinela 2000-01-01 (não pago).
+      - name: has_amount_inconsistency
+        description: >
+          TRUE quando amount_paid não condiz com o estado (Pago com amount_paid <> payment_value,
+          ou Pendente/Cancelado com amount_paid > 0). Excluído das métricas nos marts.
+        data_tests: [not_null]

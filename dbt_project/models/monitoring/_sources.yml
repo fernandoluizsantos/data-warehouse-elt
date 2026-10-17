@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: audit
+    description: Logs de execução do pipeline.
+    schema: audit
+    tables:
+      - name: extraction_runs
+        description: Uma linha por execução da extração (extract/main.py).
+      - name: dbt_results
+        description: Uma linha por nó a cada execução do dbt (macro log_dbt_results).
